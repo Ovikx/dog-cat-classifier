@@ -1,0 +1,1 @@
+is walter really a dog?

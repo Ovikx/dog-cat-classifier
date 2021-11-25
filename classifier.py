@@ -14,7 +14,7 @@ pet_types = {
 }
 pix = 224
 
-es = EarlyStopping(depth=7, ignore=30, method='consistency')
+es = EarlyStopping(depth=5, ignore=30, method='consistency')
 
 ip = ImagePreprocessor(normalization=255, training_threshold=0.7, color_mode='RGB')
 package = ip.preprocess_dirs(
@@ -117,5 +117,6 @@ for epoch in range(200):
 print('---------------EXTERNAL TESTING PREDICTIONS---------------\n0 is cat, 1 is dog')
 print(f'Dog 1 : {model.predict(np.array(ip.file_to_array("images/external testing/dog1.jpg")))}')
 print(f'Dog 2 : {model.predict(np.array(ip.file_to_array("images/external testing/dog2.jpg")))}')
+print(f'Walter : {model.predict(np.array(ip.file_to_array("images/external testing/walter.jpg")))}')
 print(f'Cat 1 : {model.predict(np.array(ip.file_to_array("images/external testing/cat1.jpg")))}')
 print(f'Cat 2 : {model.predict(np.array(ip.file_to_array("images/external testing/cat2.jpg")))}')
