@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPool2D, Dropout
-from tensorflow.keras import Model
+from tensorflow.keras import Model, callbacks
 import numpy as np
 from image_preprocessor import ImagePreprocessor
 from early_stopping import EarlyStopping
@@ -72,47 +72,8 @@ train_accuracy = keras.metrics.BinaryAccuracy()
 test_loss = keras.metrics.Mean()
 test_accuracy = keras.metrics.BinaryAccuracy()
 
-@tf.function
-def train_step(features, labels):
-    with tf.GradientTape() as tape:
-        predictions = model(features, training=True)
-        loss = loss_function(labels, predictions)
-    gradients = tape.gradient(loss, model.trainable_variables)
-    optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-
-    train_loss(loss)
-    train_accuracy(labels, predictions)
-
-@tf.function
-def test_step(features, labels):
-    predictions = model(features, training=False)
-    t_loss = loss_function(labels, predictions)
-    test_loss(t_loss)
-    test_accuracy(labels, predictions)
-
-for epoch in range(200):
-    train_loss.reset_states()
-    train_accuracy.reset_states()
-    test_loss.reset_states()
-    test_accuracy.reset_states()
-
-    for features, label in train_ds:
-        train_step(features, label)
-
-    for features, label in test_ds:
-        test_step(features, label)
-    
-    if es.check(test_loss.result()):
-        print('BREAKING LOOP')
-        break
-    
-    print(
-        f'Epoch {epoch+1} || '
-        f'Training Loss: {train_loss.result()}, '
-        f'Training Accuracy: {train_accuracy.result()}, '
-        f'Testing Loss: {test_loss.result()}, '
-        f'Testing Accuracy: {test_accuracy.result()}'
-    )
+model.compile(optimizer=optimizer, loss=loss_function, metrics=[keras.metrics.BinaryAccuracy()])
+model.fit(x=train_ds, validation_data=test_ds, epochs=200, callbacks=callbacks.EarlyStopping(monitor='val_loss', patience=10))
 
 print('---------------EXTERNAL TESTING PREDICTIONS---------------\n0 is cat, 1 is dog')
 print(f'Dog 1 : {model.predict(np.array(ip.file_to_array("images/external testing/dog1.jpg")))}')
